@@ -1,6 +1,9 @@
-# jsonv: Get Value from JSON
+// Copyright 2019 The OpenPitrix Authors. All rights reserved.
+// Use of this source code is governed by a Apache license
+// that can be found in the LICENSE file.
 
-```go
+// +build ignore
+
 package main
 
 import (
@@ -31,16 +34,3 @@ func main() {
 	v6 := jsonv.Get(`[{"value":{"abc":[11,22]}}]`, 0, "value", "abc", 100)
 	fmt.Printf("%[1]T: %[1]v\n", v6)
 }
-```
-
-Output:
-
-```
-abc
-string: abc, true
-float64: 123, true
-float64: 22, true
-float64: 11, true
-float64: 11
-<nil>: <nil>
-```
