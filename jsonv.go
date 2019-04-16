@@ -11,13 +11,28 @@ import (
 	"strconv"
 )
 
-func Get(data string, key interface{}, subKeys ...interface{}) interface{} {
+func Get(data, key interface{}, subKeys ...interface{}) interface{} {
 	v, _ := GetValue(data, key, subKeys...)
 	return v
 }
 
-func GetValue(data string, key interface{}, subKeys ...interface{}) (value interface{}, ok bool) {
-	if err := json.Unmarshal([]byte(data), &value); err != nil {
+func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{}, ok bool) {
+	switch data := data.(type) {
+	case string:
+		if err := json.Unmarshal([]byte(data), &value); err != nil {
+			return nil, false
+		}
+	case []byte:
+		if err := json.Unmarshal([]byte(data), &value); err != nil {
+			return nil, false
+		}
+
+	case map[string]interface{}:
+		value = data
+	case []interface{}:
+		value = data
+
+	default:
 		return nil, false
 	}
 
