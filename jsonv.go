@@ -8,6 +8,7 @@ package jsonv
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 )
 
@@ -39,7 +40,29 @@ func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{},
 		value = data
 
 	default:
-		return nil, fmt.Errorf("jsonv: unsupport data type: %T", data)
+		if _type := reflect.TypeOf(data); _type.Kind() == reflect.String {
+			// type xxx string
+			if err := json.Unmarshal([]byte(reflect.ValueOf(data).String()), &value); err != nil {
+				return nil, err
+			}
+		} else if _type.Kind() == reflect.Slice {
+			if _type.Elem().Kind() == reflect.Uint8 {
+				// type xxx []byte
+				if err := json.Unmarshal([]byte(reflect.ValueOf(data).Bytes()), &value); err != nil {
+					return nil, err
+				}
+			} else if _type.Elem().Kind() == reflect.Interface {
+				// type xxx []interface{}
+				value = data
+			}
+		} else if _type.Kind() == reflect.Map {
+			// type xxx map[string]interface{}
+			if _type.Key().Kind() == reflect.String && _type.Elem().Kind() == reflect.Interface {
+				value = data
+			}
+		} else {
+			return nil, fmt.Errorf("jsonv: unsupport data type: %T", data)
+		}
 	}
 
 	allKeys := []interface{}{key}

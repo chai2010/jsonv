@@ -1,5 +1,7 @@
 # jsonv: Get Value from JSON
 
+## Example1 ([hello.go](hello.go))
+
 ```go
 package main
 
@@ -57,4 +59,57 @@ float64: 22, <nil>
 float64: 11, <nil>
 float64: 11, <nil>
 <nil>: <nil>, jsonv: not found
+```
+
+## Example2 ([hello2.go](hello2.go))
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/chai2010/jsonv"
+)
+
+func main() {
+	var cfg Config = `{
+		"port": 8080,
+		"db": { "user": "root", "password": "123456" }
+	}`
+
+	fmt.Println("port:", cfg.Get("port"))
+	fmt.Println("db.user:", cfg.Get("db.user"))
+	fmt.Println("db.password:", cfg.Get("db.password"))
+
+}
+
+type Config string
+
+func (cfg Config) Get(path string) string {
+	var keys []interface{}
+	for _, s := range strings.Split(path, ".") {
+		keys = append(keys, s)
+	}
+	if len(keys) < 1 {
+		return ""
+	}
+
+	v := jsonv.Get(string(cfg), keys[0], keys[1:]...)
+	if v == nil {
+		return ""
+	}
+
+	return fmt.Sprint(v)
+}
+```
+
+Output:
+
+```
+$ go run hello2.go
+port: 8080
+db.user: root
+db.password: 123456
 ```

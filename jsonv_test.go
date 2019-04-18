@@ -84,6 +84,19 @@ func TestGetValue_failed(t *testing.T) {
 	tAssert(t, err != jsonv.ErrNotFound)
 }
 
+func TestGet_xtype(t *testing.T) {
+	type xstring string
+	type xbyte []byte
+
+	v0 := jsonv.Get(xstring(`{"value":"abc"}`), "value")
+	tAssert(t, v0 != nil)
+	tAssert(t, v0.(string) == "abc")
+
+	v1 := jsonv.Get(xbyte(`{"value":123}`), "value")
+	tAssert(t, v1 != nil)
+	tAssert(t, v1.(float64) == 123)
+}
+
 func tAssert(tb testing.TB, ok bool, a ...interface{}) {
 	if !ok {
 		tb.Helper()
