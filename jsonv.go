@@ -11,20 +11,26 @@ import (
 	"strconv"
 )
 
+type strError string
+
+func (e strError) Error() string { return string(e) }
+
+const ErrNotFound = strError("jsonv: not found")
+
 func Get(data, key interface{}, subKeys ...interface{}) interface{} {
 	v, _ := GetValue(data, key, subKeys...)
 	return v
 }
 
-func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{}, ok bool) {
+func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{}, err error) {
 	switch data := data.(type) {
 	case string:
 		if err := json.Unmarshal([]byte(data), &value); err != nil {
-			return nil, false
+			return nil, err
 		}
 	case []byte:
 		if err := json.Unmarshal([]byte(data), &value); err != nil {
-			return nil, false
+			return nil, err
 		}
 
 	case map[string]interface{}:
@@ -33,7 +39,7 @@ func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{},
 		value = data
 
 	default:
-		return nil, false
+		return nil, fmt.Errorf("jsonv: unsupport data type: %T", data)
 	}
 
 	allKeys := []interface{}{key}
@@ -50,7 +56,7 @@ func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{},
 			}
 
 			if subMap, _ := x[sKey]; subMap == nil {
-				return nil, false
+				return nil, ErrNotFound
 			} else {
 				value = subMap
 			}
@@ -62,21 +68,22 @@ func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{},
 			} else {
 				i, err := strconv.Atoi(fmt.Sprint(curKey))
 				if err != nil {
-					return nil, false
+					return nil, ErrNotFound
 				}
 				iKey = i
 			}
 
 			if iKey < 0 || iKey >= len(x) {
-				return nil, false
+				return nil, ErrNotFound
 			}
 
 			value = x[iKey]
 
 		default:
-			return nil, false
+			return nil, ErrNotFound
 		}
 	}
 
-	return value, true
+	// OK
+	return value, nil
 }
