@@ -44,6 +44,8 @@ func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{},
 			// type xxx string
 			if err := json.Unmarshal([]byte(reflect.ValueOf(data).String()), &value); err != nil {
 				return nil, err
+			} else {
+				return nil, fmt.Errorf("jsonv: unsupport data type: %T", data)
 			}
 		} else if _type.Kind() == reflect.Slice {
 			if _type.Elem().Kind() == reflect.Uint8 {
@@ -54,11 +56,15 @@ func GetValue(data, key interface{}, subKeys ...interface{}) (value interface{},
 			} else if _type.Elem().Kind() == reflect.Interface {
 				// type xxx []interface{}
 				value = data
+			} else {
+				return nil, fmt.Errorf("jsonv: unsupport data type: %T", data)
 			}
 		} else if _type.Kind() == reflect.Map {
 			// type xxx map[string]interface{}
 			if _type.Key().Kind() == reflect.String && _type.Elem().Kind() == reflect.Interface {
 				value = data
+			} else {
+				return nil, fmt.Errorf("jsonv: unsupport data type: %T", data)
 			}
 		} else {
 			return nil, fmt.Errorf("jsonv: unsupport data type: %T", data)
